@@ -1,13 +1,13 @@
-# hls-player
+# hls-engine
 
 > Full HLS playback engine built entirely from scratch — no runtime dependencies.
 
-[![npm version](https://img.shields.io/npm/v/hls-player?color=blue&style=flat-square)](https://www.npmjs.com/package/hls-player)
-[![license](https://img.shields.io/npm/l/hls-player?style=flat-square)](./LICENSE)
+[![npm version](https://img.shields.io/npm/v/hls-engine?color=blue&style=flat-square)](https://www.npmjs.com/package/hls-engine)
+[![license](https://img.shields.io/npm/l/hls-engine?style=flat-square)](./LICENSE)
 [![minified size](https://img.shields.io/badge/minified-26%20kB-green?style=flat-square)](./dist/hls-player.min.js)
 [![gzip size](https://img.shields.io/badge/gzip-9%20kB-green?style=flat-square)](./dist/hls-player.min.js)
 
-`hls-player` parses M3U8 playlists, demuxes MPEG-TS segments, transmuxes them into
+`hls-engine` parses M3U8 playlists, demuxes MPEG-TS segments, transmuxes them into
 fragmented MP4, feeds the data through the Media Source Extensions API, and
 automatically adapts quality based on available bandwidth. Every layer is written
 from first principles — no FFmpeg, no external codec library, no third-party
@@ -86,13 +86,13 @@ directly to the browser engine for zero overhead.
 
 ```bash
 # npm
-npm install hls-player
+npm install hls-engine
 
 # yarn
-yarn add hls-player
+yarn add hls-engine
 
 # pnpm
-pnpm add hls-player
+pnpm add hls-engine
 ```
 
 ---
@@ -103,7 +103,7 @@ pnpm add hls-player
 <video id="video" controls></video>
 
 <script type="module">
-  import { HLSPlayer } from 'hls-player';
+  import { HLSPlayer } from 'hls-engine';
 
   const video  = document.getElementById('video');
   const player = new HLSPlayer(video);
@@ -126,10 +126,10 @@ Add one `<script>` tag — no build step required.
 
 ```html
 <!-- Latest via unpkg -->
-<script src="https://unpkg.com/hls-player/dist/hls-player.min.js"></script>
+<script src="https://unpkg.com/hls-engine/dist/hls-player.min.js"></script>
 
 <!-- Latest via jsDelivr -->
-<script src="https://cdn.jsdelivr.net/npm/hls-player/dist/hls-player.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hls-engine/dist/hls-player.min.js"></script>
 ```
 
 All exports are available on the global `HLS` object:
@@ -149,7 +149,7 @@ All exports are available on the global `HLS` object:
 Works with Vite, Webpack, Rollup, esbuild, and any other ESM-aware bundler.
 
 ```js
-import { HLSPlayer } from 'hls-player';
+import { HLSPlayer } from 'hls-engine';
 
 const player = new HLSPlayer(videoElement, {
   maxBufferLength: 30,
@@ -177,7 +177,7 @@ await player.load('https://example.com/stream/master.m3u8');
 ### CommonJS (Node / SSR)
 
 ```js
-const { HLSPlayer } = require('hls-player');
+const { HLSPlayer } = require('hls-engine');
 ```
 
 > **Note:** `HLSPlayer` requires browser APIs (`MediaSource`, `fetch`, `crypto.subtle`).
@@ -186,7 +186,7 @@ const { HLSPlayer } = require('hls-player');
 
 ```js
 // Next.js example
-const { HLSPlayer } = await import('hls-player');
+const { HLSPlayer } = await import('hls-engine');
 ```
 
 ---
@@ -685,7 +685,7 @@ All internal modules are exported and usable independently.
 ### Parse an M3U8 playlist
 
 ```js
-import { parseM3U8 } from 'hls-player';
+import { parseM3U8 } from 'hls-engine';
 
 const text     = await fetch('https://example.com/master.m3u8').then(r => r.text());
 const playlist = parseM3U8(text, 'https://example.com/master.m3u8');
@@ -702,7 +702,7 @@ if (playlist.type === 'master') {
 ### Demux an MPEG-TS segment
 
 ```js
-import { TSDemuxer } from 'hls-player';
+import { TSDemuxer } from 'hls-engine';
 
 const buffer  = await fetch('https://example.com/seg001.ts').then(r => r.arrayBuffer());
 const demuxer = new TSDemuxer();
@@ -719,7 +719,7 @@ console.log(`Audio codec:   ${audioTrack.codec}`);  // e.g. 'mp4a.40.2'
 ### Transmux TS → fMP4
 
 ```js
-import { Transmuxer } from 'hls-player';
+import { Transmuxer } from 'hls-engine';
 
 const tx = new Transmuxer();
 
@@ -743,7 +743,7 @@ tx.reset();
 ### Download segments with retry and bandwidth estimation
 
 ```js
-import { SegmentLoader } from 'hls-player';
+import { SegmentLoader } from 'hls-engine';
 
 const loader = new SegmentLoader({ maxRetries: 5 });
 
@@ -758,7 +758,7 @@ console.log(`Estimated bandwidth: ${Math.round(loader.bandwidth / 1000)} kbps`);
 ### ABR Controller standalone
 
 ```js
-import { ABRController } from 'hls-player';
+import { ABRController } from 'hls-engine';
 
 const levels = [
   { bandwidth: 400000 },
@@ -830,8 +830,8 @@ fetch(segment.uri)
 
 ```bash
 # Clone
-git clone https://github.com/nurullahkilic/hls-player.git
-cd hls-player
+git clone https://github.com/nurullahkilic/hls-player-provider.git
+cd hls-player-provider
 
 # Install dev dependencies (rollup + terser only)
 npm install
