@@ -21,10 +21,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nurullahkilic/hls-player.git"
+    "url": "git+https://github.com/nurullahkilic/hls-player-provider.git"
   },
   "bugs": {
-    "url": "https://github.com/nurullahkilic/hls-player/issues"
+    "url": "https://github.com/nurullahkilic/hls-player-provider/issues"
   },
   "homepage": "https://hls-engine.nurullahkilic.dev",
   "type": "module",

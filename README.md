@@ -831,7 +831,7 @@ fetch(segment.uri)
 
 ```bash
 # Clone
-git clone https://github.com/nurullahkilic/hls-player-provider.git
+git clone https://github.com/nurullahkilic/hls-player-provider-provider.git
 cd hls-player-provider
 
 # Install dev dependencies (rollup + terser only)
