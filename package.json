@@ -1,6 +1,6 @@
 {
   "name": "hls-engine",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Full HLS playback engine built from scratch — M3U8 parsing, MPEG-TS transmuxing, ABR, and MSE pipeline. Zero runtime dependencies.",
   "keywords": [
     "hls",
