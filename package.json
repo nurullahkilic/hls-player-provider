@@ -1,12 +1,62 @@
 {
   "name": "hls-player",
   "version": "1.0.0",
-  "description": "HLS video player built from scratch — no dependencies",
-  "type": "module",
-  "main": "src/index.js",
-  "scripts": {
-    "demo": "npx serve ."
+  "description": "Full HLS playback engine built from scratch — M3U8 parsing, MPEG-TS transmuxing, ABR, and MSE pipeline. Zero runtime dependencies.",
+  "keywords": [
+    "hls",
+    "http-live-streaming",
+    "m3u8",
+    "video",
+    "streaming",
+    "adaptive-bitrate",
+    "abr",
+    "mse",
+    "media-source-extensions",
+    "mpeg-ts",
+    "transmuxer",
+    "mp4",
+    "player"
+  ],
+  "author": "Nurullah Kılıç",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nurullahkilic/hls-player.git"
   },
-  "keywords": ["hls", "video", "streaming", "mse", "m3u8"],
-  "license": "MIT"
+  "bugs": {
+    "url": "https://github.com/nurullahkilic/hls-player/issues"
+  },
+  "homepage": "https://github.com/nurullahkilic/hls-player#readme",
+  "type": "module",
+  "main": "dist/hls-player.cjs.js",
+  "module": "dist/hls-player.esm.js",
+  "browser": "dist/hls-player.min.js",
+  "unpkg": "dist/hls-player.min.js",
+  "jsdelivr": "dist/hls-player.min.js",
+  "exports": {
+    ".": {
+      "import": "./dist/hls-player.esm.js",
+      "require": "./dist/hls-player.cjs.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c --watch",
+    "demo": "npx serve .",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@rollup/plugin-terser": "^1.0.0",
+    "rollup": "^4.24.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
 }
