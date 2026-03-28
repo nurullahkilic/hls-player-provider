@@ -26,7 +26,7 @@
   "bugs": {
     "url": "https://github.com/nurullahkilic/hls-player/issues"
   },
-  "homepage": "https://github.com/nurullahkilic/hls-player#readme",
+  "homepage": "https://hls-engine.nurullahkilic.dev",
   "type": "module",
   "main": "dist/hls-player.cjs.js",
   "module": "dist/hls-player.esm.js",

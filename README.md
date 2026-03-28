@@ -1,6 +1,7 @@
 # hls-engine
 
 > Full HLS playback engine built entirely from scratch — no runtime dependencies.
+> **Live demo:** [hls-engine.nurullahkilic.dev](https://hls-engine.nurullahkilic.dev)
 
 [![npm version](https://img.shields.io/npm/v/hls-engine?color=blue&style=flat-square)](https://www.npmjs.com/package/hls-engine)
 [![license](https://img.shields.io/npm/l/hls-engine?style=flat-square)](./LICENSE)
