@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HLS Player — from scratch</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0f0f0f;
+      color: #e0e0e0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+      gap: 1.5rem;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: #fff;
+    }
+
+    h1 span { color: #3b82f6; }
+
+    /* ── URL input ─────────────────────────────── */
+    .url-row {
+      display: flex;
+      gap: 0.5rem;
+      width: 100%;
+      max-width: 860px;
+    }
+    .url-row input {
+      flex: 1;
+      padding: 0.6rem 0.9rem;
+      background: #1e1e1e;
+      border: 1px solid #333;
+      border-radius: 8px;
+      color: #e0e0e0;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .url-row input:focus { border-color: #3b82f6; }
+    .url-row button {
+      padding: 0.6rem 1.2rem;
+      background: #3b82f6;
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .url-row button:hover { background: #2563eb; }
+
+    /* ── Video ─────────────────────────────────── */
+    .video-wrap {
+      position: relative;
+      width: 100%;
+      max-width: 860px;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    }
+    video {
+      display: block;
+      width: 100%;
+      max-height: 480px;
+      background: #000;
+    }
+
+    /* ── Stats bar ─────────────────────────────── */
+    .stats {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.75rem;
+      color: #888;
+      width: 100%;
+      max-width: 860px;
+      flex-wrap: wrap;
+    }
+    .stats .badge {
+      background: #1e1e1e;
+      border: 1px solid #2a2a2a;
+      border-radius: 6px;
+      padding: 0.3rem 0.7rem;
+    }
+    .stats .badge span { color: #3b82f6; font-weight: 600; }
+
+    /* ── Quality selector ──────────────────────── */
+    .quality-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      width: 100%;
+      max-width: 860px;
+    }
+    .quality-row label { font-size: 0.85rem; color: #aaa; }
+    .quality-row button {
+      padding: 0.3rem 0.8rem;
+      font-size: 0.8rem;
+      border: 1px solid #333;
+      border-radius: 6px;
+      background: #1e1e1e;
+      color: #ccc;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .quality-row button.active {
+      background: #3b82f6;
+      border-color: #3b82f6;
+      color: #fff;
+    }
+    .quality-row button:hover:not(.active) {
+      border-color: #555;
+    }
+
+    /* ── Event log ─────────────────────────────── */
+    .log-wrap {
+      width: 100%;
+      max-width: 860px;
+    }
+    .log-wrap h2 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #555;
+      margin-bottom: 0.5rem;
+    }
+    #log {
+      background: #111;
+      border: 1px solid #1e1e1e;
+      border-radius: 8px;
+      height: 160px;
+      overflow-y: auto;
+      padding: 0.6rem 0.8rem;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.72rem;
+      line-height: 1.6;
+      color: #7a7a7a;
+    }
+    #log .entry { border-bottom: 1px solid #1a1a1a; padding: 1px 0; }
+    #log .entry.error { color: #f87171; }
+    #log .entry.warn  { color: #fbbf24; }
+    #log .entry.info  { color: #60a5fa; }
+    #log .entry.ok    { color: #34d399; }
+
+    /* ── Sample URLs ───────────────────────────── */
+    .samples {
+      width: 100%;
+      max-width: 860px;
+      font-size: 0.78rem;
+      color: #555;
+    }
+    .samples a {
+      color: #3b82f6;
+      text-decoration: none;
+      display: inline-block;
+      margin-right: 1rem;
+    }
+    .samples a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <h1>HLS Player — built <span>from scratch</span></h1>
+
+  <!-- URL input -->
+  <div class="url-row">
+    <input id="urlInput" type="text" placeholder="https://example.com/stream/master.m3u8"
+           value="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8" />
+    <button id="loadBtn">Load</button>
+  </div>
+
+  <!-- Sample streams -->
+  <div class="samples">
+    Quick test streams:
+    <a href="#" data-url="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8">Mux test (ABR)</a>
+    <a href="#" data-url="https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_4x3/bipbop_4x3.m3u8">Apple bipbop</a>
+    <a href="#" data-url="https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8">Apple fMP4</a>
+  </div>
+
+  <!-- Video element -->
+  <div class="video-wrap">
+    <video id="video" controls playsinline></video>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="badge">State: <span id="statState">idle</span></div>
+    <div class="badge">Bandwidth: <span id="statBw">—</span></div>
+    <div class="badge">Buffer: <span id="statBuf">—</span></div>
+    <div class="badge">Level: <span id="statLevel">—</span></div>
+    <div class="badge">Segments: <span id="statSegs">0</span></div>
+  </div>
+
+  <!-- Quality switcher (populated after manifest loads) -->
+  <div class="quality-row" id="qualityRow">
+    <label>Quality:</label>
+    <button class="active" data-idx="auto">Auto</button>
+  </div>
+
+  <!-- Event log -->
+  <div class="log-wrap">
+    <h2>Event log</h2>
+    <div id="log"></div>
+  </div>
+
+  <script type="module">
+    import { HLSPlayer } from '../src/index.js';
+
+    const video      = document.getElementById('video');
+    const urlInput   = document.getElementById('urlInput');
+    const loadBtn    = document.getElementById('loadBtn');
+    const logEl      = document.getElementById('log');
+    const qualityRow = document.getElementById('qualityRow');
+
+    const statState  = document.getElementById('statState');
+    const statBw     = document.getElementById('statBw');
+    const statBuf    = document.getElementById('statBuf');
+    const statLevel  = document.getElementById('statLevel');
+    const statSegs   = document.getElementById('statSegs');
+
+    let player = null;
+    let segsLoaded = 0;
+
+    // ── Logging ─────────────────────────────────────────
+    function log(msg, type = '') {
+      const el = document.createElement('div');
+      el.className = 'entry ' + type;
+      el.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      logEl.prepend(el);
+      if (logEl.children.length > 200) logEl.lastChild.remove();
+    }
+
+    // ── Stats ticker ─────────────────────────────────────
+    setInterval(() => {
+      if (!player) return;
+      const bw = player._loader?.bandwidth ?? 0;
+      statBw.textContent   = bw > 0 ? `${(bw / 1000).toFixed(0)} kbps` : '—';
+      statBuf.textContent  = `${player._bufMgr?.bufferedAhead()?.toFixed(1) ?? 0} s`;
+      statLevel.textContent = player._abr
+        ? `${player.currentLevel} / ${player._abr.levelCount - 1}`
+        : 'native';
+      statState.textContent = player._state ?? '—';
+      statSegs.textContent  = segsLoaded;
+    }, 800);
+
+    // ── Build quality buttons ──────────────────────────
+    function buildQualityButtons(levels) {
+      qualityRow.innerHTML = '<label>Quality:</label>';
+
+      const autoBtn = document.createElement('button');
+      autoBtn.textContent = 'Auto';
+      autoBtn.dataset.idx = 'auto';
+      autoBtn.classList.add('active');
+      autoBtn.addEventListener('click', () => {
+        player.setLevel(null);
+        [...qualityRow.querySelectorAll('button')].forEach(b => b.classList.remove('active'));
+        autoBtn.classList.add('active');
+      });
+      qualityRow.appendChild(autoBtn);
+
+      levels.forEach((lvl, i) => {
+        const btn = document.createElement('button');
+        const res = lvl.resolution ? `${lvl.resolution.width}p` : '';
+        btn.textContent = res || `${Math.round(lvl.bandwidth / 1000)}k`;
+        btn.title = `${Math.round(lvl.bandwidth / 1000)} kbps`;
+        btn.dataset.idx = i;
+        btn.addEventListener('click', () => {
+          player.setLevel(i);
+          [...qualityRow.querySelectorAll('button')].forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+        });
+        qualityRow.appendChild(btn);
+      });
+    }
+
+    // ── Load stream ───────────────────────────────────
+    async function loadStream(url) {
+      if (player) {
+        player.destroy();
+        player = null;
+        segsLoaded = 0;
+      }
+
+      log(`Loading: ${url}`, 'info');
+
+      player = new HLSPlayer(video, { debug: true });
+
+      player.on('manifest_loaded', ({ masterPlaylist }) => {
+        log(`Manifest loaded — ${masterPlaylist.variants.length} variants`, 'ok');
+        buildQualityButtons(player.levels);
+      });
+
+      player.on('level_loaded', ({ mediaPlaylist, levelIndex }) => {
+        log(`Level ${levelIndex} playlist loaded — ${mediaPlaylist.segments.length} segments`, 'ok');
+      });
+
+      player.on('frag_loading', ({ segment }) => {
+        log(`Fetching segment sn=${segment.sn}`);
+      });
+
+      player.on('frag_loaded', ({ segment }) => {
+        segsLoaded++;
+        log(`Segment sn=${segment.sn} loaded (${segment.duration.toFixed(2)}s)`, 'ok');
+      });
+
+      player.on('level_switched', ({ index }) => {
+        log(`ABR switched to level ${index}`, 'info');
+        [...qualityRow.querySelectorAll('button')].forEach(b => b.classList.remove('active'));
+        const autoBtn = qualityRow.querySelector('[data-idx="auto"]');
+        if (autoBtn) autoBtn.classList.add('active');
+      });
+
+      player.on('buffer_created', ({ tracks }) => {
+        log(`SourceBuffers created — ${tracks.videoCodec} / ${tracks.audioCodec}`, 'ok');
+      });
+
+      player.on('error', ({ type, details, fatal, error }) => {
+        log(`${fatal ? '[FATAL] ' : ''}${type}/${details}: ${error?.message ?? error}`, 'error');
+      });
+
+      await player.load(url);
+    }
+
+    // ── UI wiring ─────────────────────────────────────
+    loadBtn.addEventListener('click', () => {
+      const url = urlInput.value.trim();
+      if (url) loadStream(url);
+    });
+
+    urlInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') loadBtn.click();
+    });
+
+    document.querySelectorAll('.samples a').forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        const url = a.dataset.url;
+        urlInput.value = url;
+        loadStream(url);
+      });
+    });
+
+    // Auto-load the default URL on page load
+    loadStream(urlInput.value.trim());
+  </script>
+</body>
+</html>

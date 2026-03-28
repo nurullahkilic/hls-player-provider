@@ -1,0 +1,12 @@
+{
+  "name": "hls-player",
+  "version": "1.0.0",
+  "description": "HLS video player built from scratch — no dependencies",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "demo": "npx serve ."
+  },
+  "keywords": ["hls", "video", "streaming", "mse", "m3u8"],
+  "license": "MIT"
+}
